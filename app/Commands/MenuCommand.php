@@ -98,7 +98,7 @@ class MenuCommand extends Command
         $accounts[] = $account;
         file_put_contents($filePath, serialize($accounts));
 
-        info('Account Created Successfully!');
+        $this->info('Account Created Successfully!');
         $this->goToMenu($menu);
 
     }
