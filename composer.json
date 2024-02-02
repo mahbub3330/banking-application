@@ -17,7 +17,9 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "laravel-zero/framework": "^8.8"
+        "laravel-zero/framework": "^8.8",
+        "laravel/prompts": "dev-support-older-php",
+        "php-school/cli-menu": "^4.3"
     },
     "require-dev": {
         "mockery/mockery": "^1.4.3",
