@@ -64,12 +64,7 @@ class MenuCommand extends Command
 
     public function addNewAccount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
+        list($filePath, $accounts) = $this->getAccounts();
 
         $name = text(
             label: 'What is your name?',
@@ -104,11 +99,7 @@ class MenuCommand extends Command
         file_put_contents($filePath, serialize($accounts));
 
         info('Account Created Successfully!');
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->goToMenu($menu);
 
     }
 
@@ -119,35 +110,14 @@ class MenuCommand extends Command
 
         $accounts = (Storage::exists($file) && Storage::size($file) > 0) ? unserialize(file_get_contents($filePath)) : [];
 
-        $this->table(['Name', 'A\C No', 'Account Type', 'Balance', 'Created At'], collect($accounts)->map(function ($account){
-            return [
-                $account['name'] ?? 'N/A',
-                $account['account_number'] ?? 'N/A',
-                $account['account_type'] ?? 'N/A',
-                $account['balance'] ?? 'N/A',
-                $account['created_at'] ?? 'N/A',
-            ];
-        }));
-
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->displayList($accounts, $menu);
     }
 
     public function updateAccount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
-        $accountNumber = text(
-            label: 'Enter your Account Number',
-            validate: fn ( $value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
-        );
+        list($filePath, $accounts) = $this->getAccounts();
+
+        $accountNumber = $this->getAccount($accounts);
 
         $defaultName = collect($accounts)->where('account_number', $accountNumber)->first()['name'] ?? null;
 
@@ -166,26 +136,14 @@ class MenuCommand extends Command
         file_put_contents($filePath, serialize($accounts));
 
         $this->info('Account Updated Successfully!');
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->goToMenu($menu);
 
     }
 
     public function deleteAccount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
-        $accountNumber = text(
-            label: 'Enter your Account Number',
-            validate: fn ( $value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
-        );
+        list($filePath, $accounts) = $this->getAccounts();
+        $accountNumber = $this->getAccount($accounts);
 
         foreach ($accounts as $index => $account){
             if ($account['account_number'] == $accountNumber){
@@ -193,30 +151,17 @@ class MenuCommand extends Command
             }
         }
 
-        $this->info(print_r($accounts));
-
         file_put_contents($filePath, serialize($accounts));
 
         $this->info('Account Deleted Successfully!');
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->goToMenu($menu);
     }
 
     public function depositAmount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
-        $accountNumber = text(
-            label: 'Enter your Account Number',
-            validate: fn ( $value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
-        );
+        list($filePath, $accounts) = $this->getAccounts();
+
+        $accountNumber = $this->getAccount($accounts);
 
 
         $balance = text(
@@ -233,25 +178,13 @@ class MenuCommand extends Command
         file_put_contents($filePath, serialize($accounts));
 
         $this->info('Balance Deposited Successfully!');
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->goToMenu($menu);
     }
 
     public function withdrawAmount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
-        $accountNumber = text(
-            label: 'Enter your Account Number',
-            validate: fn ( $value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
-        );
+        list($filePath, $accounts) = $this->getAccounts();
+        $accountNumber = $this->getAccount($accounts);
 
         $CurrentBalance = collect($accounts)->where('account_number', $accountNumber)->first()['balance'] ?? 0;
 
@@ -274,28 +207,31 @@ class MenuCommand extends Command
         file_put_contents($filePath, serialize($accounts));
 
         $this->info('Balance Withdrawn Successfully!');
-        $this->ask('enter any key to go home');
-
-        if ($menu->isOpen()){
-            $menu->redraw();
-        }
+        $this->goToMenu($menu);
     }
 
     public function searchAccount(CliMenu $menu)
     {
-        $filePath = storage_path('accounts.txt');
-        $file = 'accounts.txt';
-        $accounts = [];
-        if (Storage::exists($file) && Storage::size($file) > 0) {
-            $accounts = unserialize(file_get_contents($filePath));
-        }
-        $accountNumber = text(
-            label: 'Enter your Account Number',
-            validate: fn ( $value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
-        );
+        list($filePath, $accounts) = $this->getAccounts();
+        $accountNumber = $this->getAccount($accounts);
 
         $searchAccount = collect($accounts)->where('account_number', $accountNumber)->all();
-        $this->table(['Name', 'A\C No', 'Account Type', 'Balance', 'Created At'], collect($searchAccount)->map(function ($account){
+        $this->displayList($searchAccount, $menu);
+
+    }
+    protected function validateAccountNumber($value, $accounts)
+    {
+        return (bool)collect($accounts)->where('account_number', $value)->first();
+    }
+
+    /**
+     * @param array $searchAccount
+     * @param CliMenu $menu
+     * @return void
+     */
+    protected function displayList(array $searchAccount, CliMenu $menu)
+    {
+        $this->table(['Name', 'A\C No', 'Account Type', 'Balance', 'Created At'], collect($searchAccount)->map(function ($account) {
             return [
                 $account['name'] ?? 'N/A',
                 $account['account_number'] ?? 'N/A',
@@ -305,16 +241,38 @@ class MenuCommand extends Command
             ];
         }));
 
+        $this->goToMenu($menu);
+    }
+
+
+    protected function getAccounts()
+    {
+        $filePath = storage_path('accounts.txt');
+        $file = 'accounts.txt';
+        $accounts = [];
+        if (Storage::exists($file) && Storage::size($file) > 0) {
+            $accounts = unserialize(file_get_contents($filePath));
+        }
+        return array($filePath, $accounts);
+    }
+
+
+    protected function goToMenu(CliMenu $menu): void
+    {
         $this->ask('enter any key to go home');
 
-        if ($menu->isOpen()){
+        if ($menu->isOpen()) {
             $menu->redraw();
         }
-
     }
-    protected function validateAccountNumber($value, $accounts)
+
+
+    protected function getAccount(mixed $accounts): string
     {
-        return (bool)collect($accounts)->where('account_number', $value)->first();
+        return text(
+            label: 'Enter your Account Number',
+            validate: fn($value) => !$this->validateAccountNumber($value, $accounts) ? 'No Account Exists! Enter your Valid Account' : null,
+        );
     }
 
 

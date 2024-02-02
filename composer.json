@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "8.0",
         "laravel-zero/framework": "^8.8",
         "laravel/prompts": "dev-support-older-php",
         "php-school/cli-menu": "^4.3"
